@@ -22,7 +22,12 @@ jobs:
     - name: Test Docker images
       run: |
         trap 'docker compose down --volumes' EXIT
-        docker compose up -d backend
+        if ! docker compose up -d backend; then
+          echo "Backend container failed to start"
+          docker compose ps -a
+          docker compose logs --no-color backend
+          exit 1
+        fi
         docker compose ps
         for attempt in {1..30}; do
           if curl --fail --silent http://localhost:8000/health; then
