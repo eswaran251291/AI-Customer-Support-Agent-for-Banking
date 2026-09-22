@@ -36,9 +36,10 @@ jobs:
     - name: Run tests
       working-directory: backend
       run: |
-        pytest tests/ -v --cov=app
+        pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
     
     - name: Upload coverage
       uses: codecov/codecov-action@v4
       with:
-        files: ./backend/.coverage
+        files: ./backend/coverage.xml
+        fail_ci_if_error: false
