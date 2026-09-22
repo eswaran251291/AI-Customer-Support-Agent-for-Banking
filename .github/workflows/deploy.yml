@@ -21,8 +21,9 @@ jobs:
     
     - name: Test Docker images
       run: |
-        docker compose up -d
-        trap 'docker compose down' EXIT
+        trap 'docker compose down --volumes' EXIT
+        docker compose up -d backend
+        docker compose ps
         for attempt in {1..30}; do
           if curl --fail --silent http://localhost:8000/health; then
             exit 0
@@ -30,7 +31,8 @@ jobs:
           sleep 2
         done
         echo "Backend health check did not become ready"
-        docker compose logs backend
+        docker compose ps -a
+        docker compose logs --no-color backend
         exit 1
     
     - name: Push to registry
