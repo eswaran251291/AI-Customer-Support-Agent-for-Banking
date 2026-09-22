@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: banking_ai_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./banking_support.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DEBUG=True
+    volumes:
+      - ./backend:/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: banking_ai_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - DEBUG=True
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+
+  db:
+    image: postgres:15
+    container_name: banking_ai_db
+    environment:
+      - POSTGRES_DB=banking_support
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: banking_ai_network

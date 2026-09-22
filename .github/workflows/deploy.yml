@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Docker images
+      run: |
+        docker-compose build
+    
+    - name: Test Docker images
+      run: |
+        docker-compose up -d
+        sleep 10
+        curl http://localhost:8000/health || exit 1
+        docker-compose down
+    
+    - name: Push to registry
+      run: |
+        echo "Configure your Docker registry credentials here"
+        # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        # docker-compose push
