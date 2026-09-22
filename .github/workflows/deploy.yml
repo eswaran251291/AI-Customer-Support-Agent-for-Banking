@@ -17,18 +17,25 @@ jobs:
     
     - name: Build Docker images
       run: |
-        docker compose build
+        docker build -t banking-ai-backend:ci ./backend
+        docker build -t banking-ai-frontend:ci ./frontend
     
     - name: Test Docker images
       run: |
-        trap 'docker compose down --volumes' EXIT
-        if ! docker compose up -d backend; then
-          echo "Backend container failed to start"
-          docker compose ps -a
-          docker compose logs --no-color backend
-          exit 1
-        fi
-        docker compose ps
+        container_name=banking_ai_backend_smoke
+        cleanup() {
+          docker logs "$container_name" 2>&1 || true
+          docker rm -f "$container_name" >/dev/null 2>&1 || true
+        }
+        trap cleanup EXIT
+
+        docker run -d \
+          --name "$container_name" \
+          --publish 8000:8000 \
+          --env DATABASE_URL=sqlite:///./banking_support.db \
+          --env DEBUG=true \
+          banking-ai-backend:ci
+
         for attempt in {1..30}; do
           if curl --fail --silent http://localhost:8000/health; then
             exit 0
@@ -36,12 +43,12 @@ jobs:
           sleep 2
         done
         echo "Backend health check did not become ready"
-        docker compose ps -a
-        docker compose logs --no-color backend
+        docker ps -a
         exit 1
     
     - name: Push to registry
       run: |
         echo "Configure your Docker registry credentials here"
         # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        # docker compose push
+        # docker push banking-ai-backend:ci
+        # docker push banking-ai-frontend:ci
