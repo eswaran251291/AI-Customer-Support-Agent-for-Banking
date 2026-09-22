@@ -203,8 +203,21 @@ black --check app/
 
 ## Next Steps
 
-1. Set up your API keys in `.env` files
-2. Configure database in `backend/app/config.py`
-3. Start developing features in respective directories
-4. Write tests as you develop
-5. Commit code with meaningful messages
+Completed in the current development build:
+
+- FastAPI chat endpoint with intent classification and MFA challenges
+- Fraud and security escalation routing
+- Customer lookup, balance, and transaction-history endpoints
+- Live analytics summary, trend, and category endpoints
+- Streamlit chat, customer lookup, and analytics views
+- Backend tests covering chat, MFA, escalation, and analytics behavior
+- GitHub Actions test and Docker smoke-test workflows
+
+Production tasks remaining:
+
+1. Set real API keys in `.env` files when enabling hosted AI responses
+2. Replace mock customer data with a secured core-banking adapter
+3. Persist conversations, audit events, and analytics in PostgreSQL
+4. Enforce JWT authentication and customer ownership checks on sensitive routes
+5. Replace demonstration MFA with a managed MFA provider
+6. Complete rate limiting, security review, migrations, and compliance assessment
